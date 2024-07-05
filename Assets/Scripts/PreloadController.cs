@@ -6,11 +6,11 @@ using UnityEngine;
 
 public class PreloadController : Controller
 {
-    public abstract class PreloadState : State<PreloadController>
+    private abstract class GunState : State<PreloadController>
     {
     }
 
-    public class InitializeApp : PreloadState
+    private class InitializeGun : GunState
     {
             
         private bool _finished;
@@ -18,42 +18,39 @@ public class PreloadController : Controller
         {
             Debug.Log("on initialize state enter");
             base.OnEnter();
+            _finished = true;
 
         }
 
   
-        private void OnSplashScreenVideoFinished()
-        {
-            //  Debug.Log("Video finne");
-
-            Temp();
-        }
 
         private async void Temp()
         {
             await Task.Delay(1000);
-            Agent.splashScreenVideoPassed = true;
+
         }
 
- 
-
-
+        
 
         protected override void OnUpdate(float deltaTime)
         {
+            
             base.OnUpdate(deltaTime);
+            Debug.Log("1111111111111111111111");
+            _finished = true;
             if (_finished)
                 Finished();
         }
 
         protected override void OnExit()
         {
+            Debug.Log("1111111111111111111111");
             base.OnExit();
                
         }
     }
 
-    public class NextSceneState : PreloadState
+    private class GrabState : GunState
     {
         private bool _finished;
 
@@ -63,11 +60,11 @@ public class PreloadController : Controller
 
 
             base.OnEnter();
-            LoadNextScene();
+            LoadGun();
             _finished = true;
         }
 
-        private void LoadNextScene()
+        private void LoadGun()
         {
            
             _loadNextSceneOperation.allowSceneActivation = true;
@@ -88,7 +85,7 @@ public class PreloadController : Controller
         }
     }
 
-    public class ConnectState : PreloadState
+    private class GunConnectState : GunState
     {
 
         private int _attempt;
@@ -126,7 +123,7 @@ public class PreloadController : Controller
         }
     }
 
-    public class OfflineModeState : PreloadState
+    private class GunModeState : GunState
     {
           
 
@@ -145,7 +142,7 @@ public class PreloadController : Controller
         }
     }
 
-    public class GoToMatch3Debug : PreloadState
+    private class GunDebugState : GunState
     {
         protected override void OnEnter()
         {
@@ -183,14 +180,14 @@ public class PreloadController : Controller
         splashScreenVideoPassed = false;
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
-        InitializeApp initialState = new InitializeApp { Name = "Init App state" };
-        NextSceneState nextSceneState = new NextSceneState { Name = "Next Scene state" };
-        OfflineModeState offlineState = new OfflineModeState { Name = "Offline State" };
-        GoToMatch3Debug gotoMatch3 = new GoToMatch3Debug() { Name = "Goto Match3 State" };
-        Transition.CreateAndAssign(initialState, offlineState);
-        Transition.CreateAndAssign(offlineState, nextSceneState);
+        InitializeGun initialGun = new InitializeGun { Name = "Init  state" };
+        GrabState grabState = new GrabState { Name = "grab State state" };
+        GunModeState gunState = new GunModeState { Name = "gunState  State" };
+        GunDebugState gunDebugState = new GunDebugState() { Name = "Goto  gun Debug State" };
+        Transition.CreateAndAssign(initialGun, gunState);
+        Transition.CreateAndAssign(gunState, grabState);
 
-        _fsm = new Fsm<PreloadController>(this, initialState) { Name = "Preload FSM" };
+        _fsm = new Fsm<PreloadController>(this, initialGun) { Name = "Preload FSM" };
 
         RunFsm();
           
@@ -203,32 +200,16 @@ public class PreloadController : Controller
         _fsm.Start();
     }
 
-    private void ShowSettingMenu()
-    {
-  
-        List<string> options = new List<string>();
-
-
-
-        // selectButton.onClick.AddListener(() =>
-        // {
-        //     dropdown.gameObject.SetActive(false);
-        //     selectButton.gameObject.SetActive(false);
-        //     if (gameMode == GameMode.None) gameMode = (GameMode)1;
-        //     _fsm.Start();
-        // });
-    }
-
-
+    
     private void Update()
     {
         //_fsm?.UnityEngine.PlayerLoop.Update(Time.deltaTime);
-        _progressTimer += Time.deltaTime;
-        if (_loadNextSceneOperation != null)
-        {
-            _progressTimer = Mathf.Clamp(_progressTimer, _loadNextSceneOperation.allowSceneActivation ? 8 : 0, _loadNextSceneOperation.allowSceneActivation ? 10 : 9);
-        }
-        var progress = _progressTimer / 10f;
+        // _progressTimer += Time.deltaTime;
+        // if (_loadNextSceneOperation != null)
+        // {
+        //     _progressTimer = Mathf.Clamp(_progressTimer, _loadNextSceneOperation.allowSceneActivation ? 8 : 0, _loadNextSceneOperation.allowSceneActivation ? 10 : 9);
+        // }
+        // var progress = _progressTimer / 10f;
            
     }
 
